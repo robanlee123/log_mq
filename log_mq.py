@@ -1,6 +1,6 @@
 #!/usr/bin/env python
  
-import os, sys, time, signal, re
+import os, sys, time, signal, re, argparse
 from daemon import Daemon
 
 logFile = '/var/log/logmq.log'
@@ -62,22 +62,21 @@ if __name__ == "__main__":
     """
     main function
     """
-    
+    parser = argparse.ArgumentParser("Log mq")
+    parser.add_argument('-c' , '--config', help="config file, default " + conFile)
+    parser.add_argument('-k' , '--action', help="action, start|stop|restart", required=True)
+    args = parser.parse_args()
 
     #daemon = MyDaemon(pidfile=pidFile, stdout=logFile, stderr=logFile)
     daemon = MyDaemon(pidfile=pidFile)
 
-    if len(sys.argv) == 2:
-        if 'start' == sys.argv[1]:
-            daemon.start()
-        elif 'stop' == sys.argv[1]:
-            daemon.stop()
-        elif 'restart' == sys.argv[1]:
-            daemon.restart()
-        else:
-            print "Unknown command"
-            sys.exit(2)
-        sys.exit(0)
+    if 'start' == args.action:
+        daemon.start()
+    elif 'stop' == args.action:
+        daemon.stop()
+    elif 'restart' == args.action:
+        daemon.restart()
     else:
-        print "usage: %s start|stop|restart" % sys.argv[0]
+        print "Unknown action"
         sys.exit(2)
+    sys.exit(0)
