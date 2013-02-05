@@ -1,7 +1,6 @@
 #!/usr/bin/env python
  
-import sys, os, time, atexit
-from signal import SIGTERM
+import sys, os, time, atexit, signal
  
 class Daemon:
     """
@@ -61,7 +60,8 @@ class Daemon:
         file(self.pidfile,'w+').write("%s\n" % pid)
        
     def delpid(self):
-        os.remove(self.pidfile)
+        if os.getppid() == 1 and os.path.exists(self.pidfile):
+            os.remove(self.pidfile)
  
     def start(self):
         """
@@ -104,8 +104,8 @@ class Daemon:
         # Try killing the daemon process       
         try:
             while 1:
-                os.kill(pid, SIGTERM)
-                time.sleep(0.1)
+                os.kill(pid, signal.SIGTERM)
+                time.sleep(1)
         except OSError, err:
             err = str(err)
             if err.find("No such process") > 0:
@@ -114,6 +114,26 @@ class Daemon:
             else:
                 print str(err)
                 sys.exit(1)
+
+    def reload(self):
+        """
+        send hup signal to process
+        """
+        # Get the pid from the pidfile
+        try:
+            pf = file(self.pidfile,'r')
+            pid = int(pf.read().strip())
+            pf.close()
+        except IOError:
+            pid = None
+       
+        if not pid:
+            message = "pidfile %s does not exist. Daemon not running?\n"
+            sys.stderr.write(message % self.pidfile)
+            return
+ 
+        # Send signal
+        os.kill(pid, signal.SIGHUP)
  
     def restart(self):
         """
@@ -122,12 +142,6 @@ class Daemon:
         self.stop()
         self.start()
 
-    def status():
-        """
-        Get daemon status
-        """
-        print os.getgid()
- 
     def run(self):
         """
         You should override this method when you subclass Daemon. It will be called after the process has been
