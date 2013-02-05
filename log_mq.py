@@ -8,7 +8,6 @@ pidFile = '/var/run/logmq.pid'
 conFile = '/etc/logmq.conf'
 pidList = {}
 confArr = []
-stopTag = False
 
 
 class LogTailer:
@@ -62,6 +61,7 @@ def conf_parser(conf_file):
     return confArr
 
 def reload(signum, frame):
+    global confArr
     if os.getppid() == 1:
         confArr = conf_parser(conFile)
         print "[reload] [%d] %s" % (os.getpid(), confArr)
@@ -70,7 +70,6 @@ def term(signum, frame):
     """
     stop program, only parrent process do this
     """
-    stopTag = True
     ppid = os.getppid()
     for k in pidList.keys():
         while ppid == 1 and os.path.exists('/proc/' + str(k)):
@@ -110,9 +109,9 @@ class MyDaemon(Daemon):
             if childPid:
                 print "[start] pid %d %s" % (childPid, pidList[childPid])
 
-        while True and not stopTag:
+        while True:
             subprocess_check(confArr, pidList)
-            time.sleep(1)
+            time.sleep(0.1)
 
  
 if __name__ == "__main__":
