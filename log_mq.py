@@ -123,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument('-k' , '--action', help="action, start|stop|reload|restart", required=True)
     args = parser.parse_args()
 
-    daemon = MyDaemon(pidfile=pidFile, stdout=logFile, stderr=logFile)
+    daemon = MyDaemon(pidfile=pidFile, stdin="/dev/null", stdout=logFile, stderr=logFile)
     #daemon = MyDaemon(pidfile=pidFile)
 
     if 'start' == args.action:
