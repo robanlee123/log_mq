@@ -1,3 +1,9 @@
 *.pyc
+*.pyo
+*~
+*.swp
+
+*.egg-info/
+
 put.sh
 get.sh
