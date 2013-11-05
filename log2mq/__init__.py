@@ -49,7 +49,7 @@ class Log2MQ(object):
 
         while True:
             try:
-                for line in tailer.follow(self.logfile):
+                for line in tailer.follow(self.logfile, retry=True):
                     _ = line.strip()
                     if _:
                         self.sock.send(packb(_))
